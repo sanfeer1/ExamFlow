@@ -80,7 +80,8 @@ router.put('/profile', authMiddleware, async (req, res) => {
         }
         
         let passwordQuery = '';
-        let queryParams = [name, username, email, profile_picture, mobile_number, dob, gender, register_number, department, year_of_study, section, college_name];
+        const formattedDob = (dob && typeof dob === 'string' && dob.trim() !== '') ? dob.trim() : null;
+        let queryParams = [name, username, email, profile_picture, mobile_number, formattedDob, gender, register_number, department, year_of_study, section, college_name];
         
         if (newPassword && currentPassword) {
             const [currentUserArr] = await pool.query('SELECT password FROM users WHERE id = ?', [userId]);
@@ -118,7 +119,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
 router.get('/exams', authMiddleware, async (req, res) => {
     try {
         const [exams] = await pool.query(`
-            SELECT e.*, COUNT(q.id) as question_count
+            SELECT e.*, COUNT(q.id)::int as question_count
             FROM exams e
             LEFT JOIN questions q ON q.exam_id = e.id
             GROUP BY e.id
@@ -179,7 +180,7 @@ router.post('/results', authMiddleware, async (req, res) => {
         const answerRows = [];
         questions.forEach(q => {
             const selected = answers ? (answers[q.id] || answers[String(q.id)] || null) : null;
-            const isCorrect = selected === q.correct_option ? 1 : 0;
+            const isCorrect = Boolean(selected && selected === q.correct_option);
             if (isCorrect) score++;
             answerRows.push([q.id, selected || null, isCorrect]);
         });

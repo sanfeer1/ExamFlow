@@ -5,7 +5,7 @@ A full-stack web application for creating and taking online exams. Admins (tutor
 ![ExamFlow](https://img.shields.io/badge/ExamFlow-Online%20Exam%20Portal-1a56db?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)
 ![Node.js](https://img.shields.io/badge/Node.js-Express%205-339933?style=flat-square&logo=node.js)
-![MySQL](https://img.shields.io/badge/MySQL-8-4479a1?style=flat-square&logo=mysql)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql)
 
 ---
 
@@ -40,7 +40,7 @@ A full-stack web application for creating and taking online exams. Admins (tutor
 |-----------|-------------------------------------|
 | Frontend  | React 19, React Router 7, Vite 8    |
 | Backend   | Node.js, Express 5                  |
-| Database  | MySQL 8 (via mysql2)                |
+| Database  | PostgreSQL (via pg)                 |
 | Auth      | JWT (jsonwebtoken), bcryptjs        |
 | Styling   | Plain CSS with custom design system |
 
@@ -56,7 +56,7 @@ Online Exam Portal/
 │   ├── routes/
 │   │   ├── student.js          # Auth, profile, exams, results
 │   │   └── tutor.js            # Admin-only exam/question management
-│   ├── db.js                   # MySQL pool + auto table creation
+│   ├── db.js                   # PostgreSQL pool + auto table creation
 │   ├── index.js                # Express app entry point
 │   └── .env                    # Environment variables (see setup)
 │
@@ -83,7 +83,7 @@ Online Exam Portal/
 Make sure you have the following installed:
 
 - [Node.js](https://nodejs.org/) v18 or higher
-- [MySQL](https://dev.mysql.com/downloads/) 8.0 or higher
+- [PostgreSQL](https://www.postgresql.org/download/) 14 or higher
 - npm (comes with Node.js)
 
 ---
@@ -110,13 +110,16 @@ Create a file named `.env` with the following content:
 ```env
 PORT=5000
 DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_mysql_password
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_postgres_password
 DB_NAME=online_exam_portal
 JWT_SECRET=your_secret_key_here
+# Optional: DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
 ```
 
-> **Note:** Replace `your_mysql_password` with your actual MySQL root password.  
+> **Note:** Replace `your_postgres_password` with your actual PostgreSQL password.  
+> You can also provide a `DATABASE_URL` connection string instead of individual `DB_*` variables.  
 > `JWT_SECRET` can be any long random string — keep it secret.
 
 ### 3. Install backend dependencies
@@ -250,11 +253,13 @@ answers         — id, result_id, question_id, selected_option, is_correct
 | Variable      | Description                              | Example                    |
 |---------------|------------------------------------------|----------------------------|
 | `PORT`        | Port the backend server listens on       | `5000`                     |
-| `DB_HOST`     | MySQL host                               | `localhost`                |
-| `DB_USER`     | MySQL username                           | `root`                     |
-| `DB_PASSWORD` | MySQL password                           | `yourpassword`             |
-| `DB_NAME`     | Database name (auto-created if missing)  | `online_exam_portal`       |
-| `JWT_SECRET`  | Secret key for signing JWT tokens        | `a_long_random_string`     |
+| `DB_HOST`      | PostgreSQL host                          | `localhost`                                             |
+| `DB_PORT`      | PostgreSQL port                          | `5432`                                                  |
+| `DB_USER`      | PostgreSQL username                      | `postgres`                                              |
+| `DB_PASSWORD`  | PostgreSQL password                      | `yourpassword`                                          |
+| `DB_NAME`      | Database name (auto-created if missing)  | `online_exam_portal`                                    |
+| `DATABASE_URL` | (Optional) Full connection string        | `postgresql://user:pass@host:5432/db?sslmode=require`   |
+| `JWT_SECRET`   | Secret key for signing JWT tokens        | `a_long_random_string`                                  |
 
 ---
 
