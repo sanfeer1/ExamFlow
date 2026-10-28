@@ -3,36 +3,80 @@ import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { API_BASE_URL } from '../config';
 
+const DEMO_ACCOUNTS = [
+  {
+    role: 'student',
+    name: 'Demo Student',
+    badge: 'Student',
+    email: 'student@examflow.com',
+    password: 'student123',
+    desc: 'Take exams & view results',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    )
+  },
+  {
+    role: 'admin',
+    name: 'Demo Admin',
+    badge: 'Admin',
+    email: 'admin@examflow.com',
+    password: 'admin123',
+    desc: 'Manage exams & questions',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    )
+  }
+];
+
 const Login = ({ setUser }) => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeDemo, setActiveDemo] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const executeLogin = async (idToUse, pwToUse, demoRole = null) => {
     setLoading(true);
+    setActiveDemo(demoRole);
     setError('');
     try {
       const res = await fetch(`${API_BASE_URL}/api/student/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password })
+        body: JSON.stringify({ identifier: idToUse, password: pwToUse })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || 'Failed to sign in.');
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       navigate(data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Login failed.');
     } finally {
       setLoading(false);
+      setActiveDemo(null);
     }
+  };
+
+  const handleManualLogin = (e) => {
+    e.preventDefault();
+    executeLogin(identifier, password, null);
+  };
+
+  const handleDemoLogin = (account) => {
+    if (loading) return;
+    setIdentifier(account.email);
+    setPassword(account.password);
+    executeLogin(account.email, account.password, account.role);
   };
 
   return (
@@ -47,7 +91,7 @@ const Login = ({ setUser }) => {
         </div>
 
         <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Sign in to your account to continue</p>
+        <p className="auth-subtitle">Sign in to your account or try a 1-click demo</p>
 
         {error && (
           <div className="alert error" role="alert">
@@ -58,7 +102,7 @@ const Login = ({ setUser }) => {
           </div>
         )}
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleManualLogin}>
           <div className="form-group">
             <label className="form-label" htmlFor="identifier">Email or Username</label>
             <input
@@ -105,9 +149,9 @@ const Login = ({ setUser }) => {
             type="submit"
             className="btn-full btn-lg"
             disabled={loading}
-            style={{ marginTop: '22px' }}
+            style={{ marginTop: '20px' }}
           >
-            {loading ? (
+            {loading && !activeDemo ? (
               <>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
@@ -117,6 +161,70 @@ const Login = ({ setUser }) => {
             ) : 'Sign In'}
           </button>
         </form>
+
+        {/* 1-Click Demo Accounts Section */}
+        <div className="demo-section">
+          <div className="auth-divider">
+            <span>or 1-click demo access</span>
+          </div>
+
+          <div className="demo-grid">
+            {DEMO_ACCOUNTS.map((demo) => {
+              const isCurrentLoading = loading && activeDemo === demo.role;
+              return (
+                <div
+                  key={demo.role}
+                  className={`demo-card ${demo.role} ${isCurrentLoading ? 'loading' : ''}`}
+                  onClick={() => handleDemoLogin(demo)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleDemoLogin(demo);
+                    }
+                  }}
+                  title={`Click to log in immediately as ${demo.name}`}
+                >
+                  <div className="demo-card-top">
+                    <div className="demo-icon">
+                      {demo.icon}
+                    </div>
+                    <span className="demo-role-tag">{demo.badge}</span>
+                  </div>
+
+                  <div className="demo-name">{demo.name}</div>
+                  <div className="demo-meta" title={`${demo.email} • ${demo.password}`}>
+                    {demo.email}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="demo-btn"
+                    disabled={loading}
+                    tabIndex={-1}
+                  >
+                    {isCurrentLoading ? (
+                      <>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                        </svg>
+                        Logging in...
+                      </>
+                    ) : (
+                      <>
+                        <span>1-Click Login</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         <p className="auth-footer">
           Don't have an account?{' '}
@@ -132,3 +240,4 @@ const Login = ({ setUser }) => {
 };
 
 export default Login;
+

@@ -789,7 +789,7 @@ tbody td {
   box-shadow: var(--shadow-xl);
   padding: 40px 36px;
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
 }
 
 .auth-logo {
@@ -819,9 +819,12 @@ tbody td {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 20px 0;
+  margin: 22px 0 16px;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .auth-divider::before,
@@ -830,6 +833,178 @@ tbody td {
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+/* ─── 1-Click Demo Login ────────────────────────────────────────── */
+.demo-section {
+  margin-top: 18px;
+}
+
+.demo-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.demo-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  user-select: none;
+}
+
+.demo-card:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(26, 86, 219, 0.12);
+  transform: translateY(-2px);
+}
+
+.demo-card:active {
+  transform: translateY(0);
+}
+
+.demo-card.student:hover {
+  border-color: #2563eb;
+}
+
+.demo-card.admin:hover {
+  border-color: #7c3aed;
+}
+
+.demo-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.demo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.demo-card.student .demo-icon {
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.demo-card.admin .demo-icon {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+}
+
+.demo-card:hover .demo-icon {
+  transform: scale(1.06);
+}
+
+.demo-role-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.demo-card.student .demo-role-tag {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.demo-card.admin .demo-role-tag {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.demo-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  line-height: 1.25;
+}
+
+.demo-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demo-btn {
+  margin-top: auto;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.demo-card.student .demo-btn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.demo-card.student:hover .demo-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.demo-card.admin .demo-btn {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.demo-card.admin:hover .demo-btn {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+}
+
+.demo-card.loading {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+@media (max-width: 440px) {
+  .demo-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .auth-footer {

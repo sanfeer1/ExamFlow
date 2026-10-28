@@ -257,6 +257,7 @@ const initDB = async () => {
         `);
 
         console.log("Database tables initialized successfully.");
+        await seedDemoData(client);
     } catch (err) {
         console.error("Database initialization failed:");
         console.error(err);
@@ -267,7 +268,110 @@ const initDB = async () => {
     }
 };
 
+async function seedDemoData(client) {
+    try {
+        const bcrypt = require("bcryptjs");
+        const studentPw = await bcrypt.hash("student123", 10);
+        const adminPw = await bcrypt.hash("admin123", 10);
+
+        // Check or insert Demo Student
+        const stuCheck = await client.query(
+            "SELECT id FROM users WHERE email = $1 OR username = $2",
+            ["student@examflow.com", "demo_student"]
+        );
+        let studentId;
+        if (stuCheck.rowCount === 0) {
+            const stuInsert = await client.query(
+                `INSERT INTO users (name, username, email, password, role, register_number, department, year_of_study, section, college_name)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                 RETURNING id`,
+                [
+                    "Demo Student",
+                    "demo_student",
+                    "student@examflow.com",
+                    studentPw,
+                    "student",
+                    "STU2024001",
+                    "Computer Science & Engineering",
+                    "3rd Year",
+                    "A",
+                    "ExamFlow Institute of Technology"
+                ]
+            );
+            studentId = stuInsert.rows[0].id;
+            console.log("Seeded Demo Student account (student@examflow.com / student123)");
+        } else {
+            studentId = stuCheck.rows[0].id;
+        }
+
+        // Check or insert Demo Admin
+        const admCheck = await client.query(
+            "SELECT id FROM users WHERE email = $1 OR username = $2",
+            ["admin@examflow.com", "demo_admin"]
+        );
+        let adminId;
+        if (admCheck.rowCount === 0) {
+            const admInsert = await client.query(
+                `INSERT INTO users (name, username, email, password, role, department, college_name)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+                 RETURNING id`,
+                [
+                    "Demo Admin",
+                    "demo_admin",
+                    "admin@examflow.com",
+                    adminPw,
+                    "admin",
+                    "Examination Control",
+                    "ExamFlow Institute of Technology"
+                ]
+            );
+            adminId = admInsert.rows[0].id;
+            console.log("Seeded Demo Admin account (admin@examflow.com / admin123)");
+        } else {
+            adminId = admCheck.rows[0].id;
+        }
+
+        // Check or insert sample exam
+        const examCheck = await client.query("SELECT COUNT(*) FROM exams");
+        const examCount = parseInt(examCheck.rows[0].count, 10);
+        if (examCount === 0 && adminId) {
+            const examInsert = await client.query(
+                `INSERT INTO exams (title, description, duration_minutes, created_by)
+                 VALUES ($1, $2, $3, $4)
+                 RETURNING id`,
+                [
+                    "Full-Stack & Web Development Assessment",
+                    "Comprehensive assessment covering HTTP, React fundamentals, JavaScript runtime, and Database systems.",
+                    15,
+                    adminId
+                ]
+            );
+            const examId = examInsert.rows[0].id;
+
+            const questions = [
+                ['Which HTTP status code signifies that a requested resource was successfully created on the server?', '200 OK', '201 Created', '204 No Content', '301 Moved Permanently', 'B'],
+                ['In React, which hook is primarily used for handling component side effects such as data fetching?', 'useState', 'useReducer', 'useEffect', 'useMemo', 'C'],
+                ['In relational databases, what type of key is used to establish a link between data in two tables?', 'Primary Key', 'Composite Key', 'Foreign Key', 'Candidate Key', 'C'],
+                ['What will typeof NaN evaluate to in JavaScript?', 'undefined', 'number', 'NaN', 'object', 'B'],
+                ['Which part of a JSON Web Token (JWT) contains user claims such as userId and role?', 'Header', 'Payload', 'Signature', 'Secret', 'B']
+            ];
+
+            for (const q of questions) {
+                await client.query(
+                    `INSERT INTO questions (exam_id, question_text, option_a, option_b, option_c, option_d, correct_option)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                    [examId, ...q]
+                );
+            }
+            console.log("Seeded initial sample exam and questions.");
+        }
+    } catch (seedErr) {
+        console.warn("Notice during demo seeding:", seedErr.message);
+    }
+}
+
 module.exports = {
     pool,
-    initDB
+    initDB,
+    seedDemoData
 };
